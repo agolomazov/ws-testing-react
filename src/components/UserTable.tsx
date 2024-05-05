@@ -1,7 +1,8 @@
-import { User } from "../entities";
+import { User } from '../entities';
 
 const UserTable = ({ users }: { users: User[] }) => {
-  if (users.length === 0) return <p>No users available.</p>;
+  if (users.length === 0)
+    return <p data-testid='userTableEmpty'>No users available.</p>;
 
   return (
     <table>
@@ -14,7 +15,7 @@ const UserTable = ({ users }: { users: User[] }) => {
       </thead>
       <tbody>
         {users.map((user) => (
-          <tr key={user.id}>
+          <tr key={user.id} data-testid='userTableRow'>
             <td>{user.id}</td>
             <td>{user.name}</td>
             <td>
