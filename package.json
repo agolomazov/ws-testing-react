@@ -12,7 +12,8 @@
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "test:type": "vitest --typecheck"
   },
   "dependencies": {
     "@auth0/auth0-react": "2.2.3",
