@@ -1,7 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitForElementToBeRemoved,
+} from '@testing-library/react';
 import ProductList from '../../src/components/ProductList';
 import { server } from '../mocks/server';
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, delay } from 'msw';
 import { Product } from '../../src/entities';
 import { db } from '../mocks/db';
 
@@ -23,8 +27,6 @@ describe('<ProductList>', () => {
     render(<ProductList />);
 
     const listItems = await screen.findAllByRole('listitem');
-
-    screen.debug();
 
     expect(listItems.length).toBeGreaterThan(0);
   });
@@ -59,5 +61,42 @@ describe('<ProductList>', () => {
     const errorText = await screen.findByText(/error:/i);
 
     expect(errorText).toBeInTheDocument();
+  });
+
+  it('Будет показан индикатор загрузки в момент получения данных', async () => {
+    server.use(
+      http.get('/products', async () => {
+        await delay();
+        return HttpResponse.json([]);
+      })
+    );
+
+    render(<ProductList />);
+
+    const loader = await screen.findByText(/loading/i);
+
+    expect(loader).toBeInTheDocument();
+  });
+
+  it('Будет удален индикатор загрузки после получения данных', async () => {
+    render(<ProductList />);
+
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
+
+    const loader = screen.queryByText(/loading/i);
+
+    expect(loader).not.toBeInTheDocument();
+  });
+
+  it('Будет скрыт индикатор загрузки если будет получена ошибка сети', async () => {
+    server.use(http.get('/products', () => HttpResponse.error()));
+
+    render(<ProductList />);
+
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
+
+    const loader = screen.queryByText(/loading/i);
+
+    expect(loader).not.toBeInTheDocument();
   });
 });
