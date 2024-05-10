@@ -1,10 +1,9 @@
-import { it, expect, describe } from 'vitest';
+import { describe, it } from 'vitest';
+import { db } from './mocks/db';
 
 describe('Test group', () => {
-  it('Test async fetching', async () => {
-    const response = await fetch('/categories');
-    const data = (await response.json()) as { id: number; name: string }[];
-
-    expect(data).toHaveLength(3);
+  it.only('Test async fetching', () => {
+    const product = db.product.create({ name: 'MKB' });
+    console.log(db.product.delete({ where: { id: { equals: product.id } } }));
   });
 });

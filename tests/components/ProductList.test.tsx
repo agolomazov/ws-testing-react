@@ -3,12 +3,28 @@ import ProductList from '../../src/components/ProductList';
 import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
 import { Product } from '../../src/entities';
+import { db } from '../mocks/db';
 
 describe('<ProductList>', () => {
+  const productIds: number[] = [];
+
+  beforeAll(() => {
+    [1, 2, 3].forEach(() => {
+      const product = db.product.create();
+      productIds.push(product.id);
+    });
+  });
+
+  afterAll(() => {
+    db.product.deleteMany({ where: { id: { in: productIds } } });
+  });
+
   it('Отрисует список товаров', async () => {
     render(<ProductList />);
 
     const listItems = await screen.findAllByRole('listitem');
+
+    screen.debug();
 
     expect(listItems.length).toBeGreaterThan(0);
   });
