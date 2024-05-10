@@ -30,7 +30,7 @@ const ProductDetail = ({ productId }: { productId: number }) => {
     }
 
     fetchProductData(productId).catch(() => {});
-  }, []);
+  }, [productId]);
 
   if (isLoading) return <div>Loading...</div>;
 

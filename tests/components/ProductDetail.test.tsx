@@ -1,5 +1,9 @@
-import { render, screen } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import {
+  render,
+  screen,
+  waitForElementToBeRemoved,
+} from '@testing-library/react';
+import { http, HttpResponse, delay } from 'msw';
 import ProductDetail from '../../src/components/ProductDetail';
 import { db } from '../mocks/db';
 import { server } from '../mocks/server';
@@ -63,5 +67,46 @@ describe('<ProductDetail>', () => {
     const errorText = await screen.findByText(/not found/i);
 
     expect(errorText).toBeInTheDocument();
+  });
+
+  it('Будет показан индикатор загрузки в момент получения данных', async () => {
+    server.use(
+      http.get('/products/:id', async () => {
+        await delay();
+        return HttpResponse.json(null);
+      })
+    );
+
+    render(<ProductDetail productId={productId} />);
+
+    const loader = await screen.findByText(/loading/i);
+
+    expect(loader).toBeInTheDocument();
+  });
+
+  it('Будет скрыт индикатор загрузки после получения данных', async () => {
+    render(<ProductDetail productId={productId} />);
+
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
+
+    const loader = screen.queryByText(/loading/i);
+
+    expect(loader).not.toBeInTheDocument();
+  });
+
+  it('Будет скрыт индикатор загрузки после получения ошибки', async () => {
+    server.use(
+      http.get('/products/:id', () => {
+        return new HttpResponse(null, { status: 404, statusText: 'Not found' });
+      })
+    );
+
+    render(<ProductDetail productId={productId} />);
+
+    await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
+
+    const loader = screen.queryByText(/loading/i);
+
+    expect(loader).not.toBeInTheDocument();
   });
 });
