@@ -50,4 +50,14 @@ describe('<ProductList>', () => {
 
     expect(loader).toBeInTheDocument();
   });
+
+  it('Будет показана ошибка, если возникнет ошибка сети', async () => {
+    server.use(http.get('/products', () => HttpResponse.error()));
+
+    render(<ProductList />);
+
+    const errorText = await screen.findByText(/error:/i);
+
+    expect(errorText).toBeInTheDocument();
+  });
 });
