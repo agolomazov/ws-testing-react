@@ -27,7 +27,7 @@ describe('<ProductList>', () => {
     expect(messageText).toBeInTheDocument();
   });
 
-  it.only('Отрисует загрузчик в случае, если данные ещё не загрузились', () => {
+  it('Отрисует загрузчик в случае, если данные ещё не загрузились', () => {
     render(<ProductList />);
 
     const loader = screen.getByText(/loading/i);
