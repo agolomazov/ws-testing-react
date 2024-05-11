@@ -3,11 +3,12 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
+import { delay, http, HttpResponse } from 'msw';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import ProductList from '../../src/components/ProductList';
-import { server } from '../mocks/server';
-import { http, HttpResponse, delay } from 'msw';
 import { Product } from '../../src/entities';
 import { db } from '../mocks/db';
+import { server } from '../mocks/server';
 
 describe('<ProductList>', () => {
   const productIds: number[] = [];
@@ -19,12 +20,28 @@ describe('<ProductList>', () => {
     });
   });
 
+  const renderComponent = () => {
+    const client = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
+
+    render(
+      <QueryClientProvider client={client}>
+        <ProductList />
+      </QueryClientProvider>
+    );
+  };
+
   afterAll(() => {
     db.product.deleteMany({ where: { id: { in: productIds } } });
   });
 
   it('Отрисует список товаров', async () => {
-    render(<ProductList />);
+    renderComponent();
 
     const listItems = await screen.findAllByRole('listitem');
 
@@ -38,7 +55,7 @@ describe('<ProductList>', () => {
       })
     );
 
-    render(<ProductList />);
+    renderComponent();
 
     const messageText = await screen.findByText(/no products available/i);
 
@@ -46,7 +63,7 @@ describe('<ProductList>', () => {
   });
 
   it('Отрисует загрузчик в случае, если данные ещё не загрузились', () => {
-    render(<ProductList />);
+    renderComponent();
 
     const loader = screen.getByText(/loading/i);
 
@@ -56,7 +73,7 @@ describe('<ProductList>', () => {
   it('Будет показана ошибка, если возникнет ошибка сети', async () => {
     server.use(http.get('/products', () => HttpResponse.error()));
 
-    render(<ProductList />);
+    renderComponent();
 
     const errorText = await screen.findByText(/error:/i);
 
@@ -71,7 +88,7 @@ describe('<ProductList>', () => {
       })
     );
 
-    render(<ProductList />);
+    renderComponent();
 
     const loader = await screen.findByText(/loading/i);
 
@@ -79,7 +96,7 @@ describe('<ProductList>', () => {
   });
 
   it('Будет удален индикатор загрузки после получения данных', async () => {
-    render(<ProductList />);
+    renderComponent();
 
     await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
 
@@ -91,7 +108,7 @@ describe('<ProductList>', () => {
   it('Будет скрыт индикатор загрузки если будет получена ошибка сети', async () => {
     server.use(http.get('/products', () => HttpResponse.error()));
 
-    render(<ProductList />);
+    renderComponent();
 
     await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
 
