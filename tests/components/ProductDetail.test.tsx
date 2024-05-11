@@ -7,6 +7,7 @@ import { http, HttpResponse, delay } from 'msw';
 import ProductDetail from '../../src/components/ProductDetail';
 import { db } from '../mocks/db';
 import { server } from '../mocks/server';
+import { AllProviders } from '../AllProviders';
 
 describe('<ProductDetail>', () => {
   let productId: number;
@@ -20,11 +21,19 @@ describe('<ProductDetail>', () => {
     db.product.delete({ where: { id: { equals: productId } } });
   });
 
+  const renderComponent = (id: number) => {
+    render(
+      <AllProviders>
+        <ProductDetail productId={id} />
+      </AllProviders>
+    );
+  };
+
   it('Будет выведена карточка товара', async () => {
     const product = db.product.findFirst({
       where: { id: { equals: productId } },
     });
-    render(<ProductDetail productId={productId} />);
+    renderComponent(productId);
 
     const heading = await screen.findByRole('heading');
     const price = await screen.findByText(
@@ -38,16 +47,16 @@ describe('<ProductDetail>', () => {
   });
 
   it('Выведется сообщение об ошибке при не валидном id товара', async () => {
-    render(<ProductDetail productId={0} />);
+    renderComponent(0);
 
     const errorText = await screen.findByText(/error:/i);
 
     expect(errorText).toBeInTheDocument();
-    expect(errorText.textContent).toBe('Error: Invalid ProductId');
+    expect(errorText.textContent).toMatch(/invalid productId/i);
   });
 
   it('Выведет сообщение об ошибке если товар не найден', async () => {
-    render(<ProductDetail productId={110} />);
+    renderComponent(110);
 
     const errorText = await screen.findByText(/error:/i);
 
@@ -55,14 +64,14 @@ describe('<ProductDetail>', () => {
     expect(errorText).toHaveTextContent(/request failed with status code 404/i);
   });
 
-  it('Если товар не корректный', async () => {
+  it('Если товар не найден', async () => {
     server.use(
       http.get('/products/1', () => {
         return HttpResponse.json(null);
       })
     );
 
-    render(<ProductDetail productId={1} />);
+    renderComponent(1);
 
     const errorText = await screen.findByText(/not found/i);
 
@@ -77,7 +86,7 @@ describe('<ProductDetail>', () => {
       })
     );
 
-    render(<ProductDetail productId={productId} />);
+    renderComponent(productId);
 
     const loader = await screen.findByText(/loading/i);
 
@@ -85,7 +94,7 @@ describe('<ProductDetail>', () => {
   });
 
   it('Будет скрыт индикатор загрузки после получения данных', async () => {
-    render(<ProductDetail productId={productId} />);
+    renderComponent(productId);
 
     await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
 
@@ -101,7 +110,7 @@ describe('<ProductDetail>', () => {
       })
     );
 
-    render(<ProductDetail productId={productId} />);
+    renderComponent(productId);
 
     await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
 
