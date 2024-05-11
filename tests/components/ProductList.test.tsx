@@ -4,9 +4,9 @@ import {
   waitForElementToBeRemoved,
 } from '@testing-library/react';
 import { delay, http, HttpResponse } from 'msw';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import ProductList from '../../src/components/ProductList';
 import { Product } from '../../src/entities';
+import { AllProviders } from '../AllProviders';
 import { db } from '../mocks/db';
 import { server } from '../mocks/server';
 
@@ -21,18 +21,10 @@ describe('<ProductList>', () => {
   });
 
   const renderComponent = () => {
-    const client = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    });
-
     render(
-      <QueryClientProvider client={client}>
+      <AllProviders>
         <ProductList />
-      </QueryClientProvider>
+      </AllProviders>
     );
   };
 
