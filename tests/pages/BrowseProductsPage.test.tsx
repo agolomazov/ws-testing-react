@@ -53,20 +53,6 @@ describe('<BrowseProductsPage />', () => {
     expect(skeleton).not.toBeInTheDocument();
   });
 
-  it('Будет скрыт индикатор загрузки и показан текст ошибки в случае, если возникнет ошибка', async () => {
-    server.use(http.get('/categories', () => HttpResponse.error()));
-
-    renderComponent();
-
-    await waitForElementToBeRemoved(() =>
-      screen.queryByRole('progressbar', { name: /categories/i })
-    );
-
-    const errorText = screen.getByText(/network error/i);
-
-    expect(errorText).toBeInTheDocument();
-  });
-
   it('Будет показан индикатор загрузки когда запрашиваются данные', () => {
     server.use(
       http.get('/products', async () => {
@@ -86,5 +72,32 @@ describe('<BrowseProductsPage />', () => {
     await waitForElementToBeRemoved(() =>
       screen.queryByRole('progressbar', { name: /products/i })
     );
+  });
+
+  it('Не будет показано сообщение об ошибке если список категорий не будет загружен', async () => {
+    server.use(http.get('/categories', () => HttpResponse.error()));
+
+    renderComponent();
+
+    await waitForElementToBeRemoved(() => {
+      return screen.getByRole('progressbar', { name: /categories/i });
+    });
+
+    expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('combobox', { name: /filter by category/i })
+    ).not.toBeInTheDocument();
+  });
+
+  it('Будет выведена ошибка, если продукты не были загружены', async () => {
+    server.use(http.get('/products', () => HttpResponse.error()));
+
+    renderComponent();
+
+    await waitForElementToBeRemoved(() => {
+      return screen.getByRole('progressbar', { name: /products/i });
+    });
+
+    expect(screen.queryByText(/error/i)).toBeInTheDocument();
   });
 });
