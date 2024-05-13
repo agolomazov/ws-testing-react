@@ -63,7 +63,10 @@ function BrowseProducts() {
           setSelectedCategoryId(parseInt(categoryId))
         }
       >
-        <Select.Trigger placeholder='Filter by Category' />
+        <Select.Trigger
+          placeholder='Filter by Category'
+          aria-label='categories'
+        />
         <Select.Content>
           <Select.Group>
             <Select.Label>Category</Select.Label>

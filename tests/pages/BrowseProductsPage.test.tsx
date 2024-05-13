@@ -3,12 +3,32 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import { server } from '../mocks/server';
-import { delay, http, HttpResponse } from 'msw';
+import userEvent from '@testing-library/user-event';
+import { Category, Product } from '../../src/entities';
 import BrowseProducts from '../../src/pages/BrowseProductsPage';
 import { AllProviders } from '../AllProviders';
+import { db } from '../mocks/db';
+import { simulateDelay, simulateError, simulateSuccess } from '../mocks/utils';
 
 describe('<BrowseProductsPage />', () => {
+  const categories: Category[] = [];
+  const products: Product[] = [];
+
+  beforeAll(() => {
+    [1, 2].forEach(() => {
+      categories.push(db.category.create());
+      products.push(db.product.create() as unknown as Product);
+    });
+  });
+
+  afterAll(() => {
+    const categoryIds = categories.map((category) => category.id);
+    const productIds = products.map((product) => product.id);
+
+    db.category.deleteMany({ where: { id: { in: categoryIds } } });
+    db.product.deleteMany({ where: { id: { in: productIds } } });
+  });
+
   const renderComponent = () => {
     render(
       <AllProviders>
@@ -25,12 +45,7 @@ describe('<BrowseProductsPage />', () => {
   };
 
   it('Будет показан индикатор загрузки когда будут данные запрошены', () => {
-    server.use(
-      http.get('/categories', async () => {
-        await delay();
-        return HttpResponse.json([]);
-      })
-    );
+    simulateDelay('/categories');
 
     const { skeleton } = renderComponent();
 
@@ -38,11 +53,7 @@ describe('<BrowseProductsPage />', () => {
   });
 
   it('Будет скрыт индикатор загрузки когда данные будут получены', async () => {
-    server.use(
-      http.get('/categories', () => {
-        return HttpResponse.json([]);
-      })
-    );
+    simulateSuccess('/categories');
 
     const { skeleton } = renderComponent();
 
@@ -54,12 +65,7 @@ describe('<BrowseProductsPage />', () => {
   });
 
   it('Будет показан индикатор загрузки когда запрашиваются данные', () => {
-    server.use(
-      http.get('/products', async () => {
-        await delay();
-        return HttpResponse.json([]);
-      })
-    );
+    simulateDelay('/products');
 
     const { productSkeleton } = renderComponent();
 
@@ -75,7 +81,7 @@ describe('<BrowseProductsPage />', () => {
   });
 
   it('Не будет показано сообщение об ошибке если список категорий не будет загружен', async () => {
-    server.use(http.get('/categories', () => HttpResponse.error()));
+    simulateError('/categories');
 
     renderComponent();
 
@@ -90,7 +96,7 @@ describe('<BrowseProductsPage />', () => {
   });
 
   it('Будет выведена ошибка, если продукты не были загружены', async () => {
-    server.use(http.get('/products', () => HttpResponse.error()));
+    simulateError('/products');
 
     renderComponent();
 
@@ -99,5 +105,39 @@ describe('<BrowseProductsPage />', () => {
     });
 
     expect(screen.queryByText(/error/i)).toBeInTheDocument();
+  });
+
+  it('Будет выведен фильтр со списком категорий', async () => {
+    renderComponent();
+
+    const combobox = await screen.findByRole('combobox', {
+      name: /categories/,
+    });
+
+    expect(combobox).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(combobox);
+
+    const options = await screen.findAllByRole('option');
+    expect(options.length).toBeGreaterThan(0);
+
+    expect(screen.getByRole('option', { name: /all/i })).toBeInTheDocument();
+
+    categories.forEach((category) => {
+      expect(
+        screen.getByRole('option', { name: new RegExp(category.name) })
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('Будет выведен список товаров', async () => {
+    renderComponent();
+
+    await waitForElementToBeRemoved(() => screen.queryAllByRole('progressbar'));
+
+    products.forEach((product) => {
+      expect(screen.getByText(product.name)).toBeInTheDocument();
+    });
   });
 });
