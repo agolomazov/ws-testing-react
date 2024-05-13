@@ -3,11 +3,12 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import { http, HttpResponse, delay } from 'msw';
+import { http, HttpResponse } from 'msw';
 import ProductDetail from '../../src/components/ProductDetail';
+import { AllProviders } from '../AllProviders';
 import { db } from '../mocks/db';
 import { server } from '../mocks/server';
-import { AllProviders } from '../AllProviders';
+import { simulateDelay } from '../mocks/utils';
 
 describe('<ProductDetail>', () => {
   let productId: number;
@@ -79,12 +80,7 @@ describe('<ProductDetail>', () => {
   });
 
   it('Будет показан индикатор загрузки в момент получения данных', async () => {
-    server.use(
-      http.get('/products/:id', async () => {
-        await delay();
-        return HttpResponse.json(null);
-      })
-    );
+    simulateDelay('/products/:id');
 
     renderComponent(productId);
 

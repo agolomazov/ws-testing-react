@@ -3,12 +3,10 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import { delay, http, HttpResponse } from 'msw';
 import ProductList from '../../src/components/ProductList';
-import { Product } from '../../src/entities';
 import { AllProviders } from '../AllProviders';
 import { db } from '../mocks/db';
-import { server } from '../mocks/server';
+import { simulateDelay, simulateError, simulateSuccess } from '../mocks/utils';
 
 describe('<ProductList>', () => {
   const productIds: number[] = [];
@@ -41,11 +39,7 @@ describe('<ProductList>', () => {
   });
 
   it('Отрисует сообщение о том, что товаров нет, если придет пустой список', async () => {
-    server.use(
-      http.get('/products', () => {
-        return HttpResponse.json<Product[]>([]);
-      })
-    );
+    simulateSuccess('/products');
 
     renderComponent();
 
@@ -63,7 +57,7 @@ describe('<ProductList>', () => {
   });
 
   it('Будет показана ошибка, если возникнет ошибка сети', async () => {
-    server.use(http.get('/products', () => HttpResponse.error()));
+    simulateError('/products');
 
     renderComponent();
 
@@ -73,12 +67,7 @@ describe('<ProductList>', () => {
   });
 
   it('Будет показан индикатор загрузки в момент получения данных', async () => {
-    server.use(
-      http.get('/products', async () => {
-        await delay();
-        return HttpResponse.json([]);
-      })
-    );
+    simulateDelay('/products');
 
     renderComponent();
 
@@ -98,7 +87,7 @@ describe('<ProductList>', () => {
   });
 
   it('Будет скрыт индикатор загрузки если будет получена ошибка сети', async () => {
-    server.use(http.get('/products', () => HttpResponse.error()));
+    simulateError('/products');
 
     renderComponent();
 

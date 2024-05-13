@@ -16,8 +16,14 @@ describe('<BrowseProductsPage />', () => {
 
   beforeAll(() => {
     [1, 2].forEach(() => {
-      categories.push(db.category.create());
-      products.push(db.product.create() as unknown as Product);
+      const category = db.category.create();
+      categories.push(category);
+
+      [1, 2].forEach(() => {
+        products.push(
+          db.product.create({ categoryId: category.id }) as unknown as Product
+        );
+      });
     });
   });
 
@@ -139,5 +145,62 @@ describe('<BrowseProductsPage />', () => {
     products.forEach((product) => {
       expect(screen.getByText(product.name)).toBeInTheDocument();
     });
+  });
+
+  it('Будет отображен список отфильтрованных товаров', async () => {
+    renderComponent();
+
+    await waitForElementToBeRemoved(() => screen.queryAllByRole('progressbar'));
+
+    const combobox = screen.queryByRole('combobox');
+    const user = userEvent.setup();
+
+    const selectedCategory = categories[0];
+    await user.click(combobox!);
+    const option = screen.getByRole('option', { name: selectedCategory.name });
+
+    await user.click(option);
+
+    const selectedProducts = db.product.findMany({
+      where: {
+        categoryId: { equals: selectedCategory.id },
+      },
+    });
+
+    const rows = screen.getAllByRole('row');
+    const dataRows = rows.slice(1);
+    expect(dataRows).toHaveLength(selectedProducts.length);
+
+    selectedProducts.forEach((product) => {
+      expect(screen.getByText(product.name)).toBeInTheDocument();
+    });
+  });
+
+  it('Будет отображены все товары если выбран фильтр All', async () => {
+    renderComponent();
+
+    await waitForElementToBeRemoved(() => screen.queryAllByRole('progressbar'));
+
+    const combobox = screen.queryByRole('combobox');
+    const user = userEvent.setup();
+
+    const selectedCategory = categories[0];
+    await user.click(combobox!);
+    const option = screen.getByRole('option', { name: selectedCategory.name });
+
+    await user.click(option);
+
+    await user.click(combobox!);
+
+    const allOption = screen.getByRole('option', {
+      name: /all/i,
+    });
+    await user.click(allOption);
+
+    const products = db.product.getAll();
+
+    const rows = screen.getAllByRole('row');
+    const dataRows = rows.slice(1);
+    expect(dataRows).toHaveLength(products.length);
   });
 });
