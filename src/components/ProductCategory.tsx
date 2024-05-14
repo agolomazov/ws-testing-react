@@ -3,14 +3,11 @@ import { Category } from '../entities';
 import { useQuery } from 'react-query';
 import Skeleton from 'react-loading-skeleton';
 import { Select } from '@radix-ui/themes';
+interface Props {
+  onChange: (id: number | undefined) => void;
+}
 
-type onChangeHandler = (id: number | undefined) => void;
-
-export const ProductCategory = ({
-  onChange,
-}: {
-  onChange: onChangeHandler;
-}) => {
+export const ProductCategory = ({ onChange }: Props) => {
   const {
     data: categories,
     isLoading,

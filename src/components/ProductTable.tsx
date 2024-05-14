@@ -5,11 +5,11 @@ import { Table } from '@radix-ui/themes';
 import Skeleton from 'react-loading-skeleton';
 import QuantitySelector from './QuantitySelector';
 
-export const ProductTable = ({
-  categoryId,
-}: {
+interface Props {
   categoryId: number | undefined;
-}) => {
+}
+
+export const ProductTable = ({ categoryId }: Props) => {
   const {
     data: products,
     error,
