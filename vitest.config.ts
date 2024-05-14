@@ -5,7 +5,5 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: 'tests/setup.ts',
-    maxWorkers: 10,
-    fileParallelism: true,
   },
 });
