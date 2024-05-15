@@ -15,8 +15,8 @@ describe('<BrowseProductsPage />', () => {
   const products: Product[] = [];
 
   beforeAll(() => {
-    [1, 2].forEach(() => {
-      const category = db.category.create();
+    [1, 2].forEach((id) => {
+      const category = db.category.create({ name: `Category #${id}` });
       categories.push(category);
 
       [1, 2].forEach(() => {

@@ -14,7 +14,6 @@ function BrowseProducts() {
       <div className='max-w-xs'>
         <ProductCategory onChange={setSelectedCategoryId} />
       </div>
-      {/* {renderProducts()} */}
       <ProductTable categoryId={selectedCategoryId} />
     </div>
   );
