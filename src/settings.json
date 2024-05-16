@@ -1,0 +1,5 @@
+{
+  "VITE_AUTH0_DOMAIN": "dev-xny2z2sb5zbdf5t6.us.auth0.com",
+  "VITE_AUTH0_CLIENTID": "EpNCmzOpCvAphZKfORqM90EfYXcKk12O",
+  "VITE_BASE_URL": "http://localhost:3000"
+}
