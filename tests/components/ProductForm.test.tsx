@@ -34,6 +34,25 @@ describe('<ProductForm />', () => {
     });
     const submitButton = await screen.findByRole('button', { name: /submit/i });
 
+    const fillForm = async (product: Partial<Product>) => {
+      const user = userEvent.setup();
+
+      if (product.name !== undefined) {
+        await user.type(textboxName, product.name);
+      }
+
+      if (product.price !== undefined) {
+        await user.type(textboxPrice, String(product.price));
+      }
+
+      await user.tab();
+      await user.click(comboboxCategory);
+
+      const options = screen.getAllByRole('option');
+      await user.click(options[0]);
+      await user.click(submitButton);
+    };
+
     return {
       onSubmit,
       textboxName,
@@ -41,6 +60,7 @@ describe('<ProductForm />', () => {
       comboboxCategory,
       productForm,
       submitButton,
+      fillForm,
     };
   };
 
@@ -138,23 +158,8 @@ describe('<ProductForm />', () => {
   ])(
     'Показана ошибка если не было введено $scenario',
     async ({ errorMessage, price }) => {
-      const { textboxPrice, comboboxCategory, submitButton, textboxName } =
-        await renderComponent();
-
-      const user = userEvent.setup();
-
-      await user.type(textboxName, 'Anton');
-
-      if (typeof price !== 'undefined') {
-        await user.type(textboxPrice, String(price));
-      }
-
-      await user.click(comboboxCategory);
-
-      const options = screen.getAllByRole('option');
-
-      await user.click(options[0]);
-      await user.click(submitButton);
+      const { fillForm } = await renderComponent();
+      await fillForm({ name: 'a', price });
 
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
       expect(screen.getAllByRole('alert').length).toBeGreaterThan(0);
