@@ -67,4 +67,10 @@ describe('<ProductForm />', () => {
     expect(textboxPrice).toHaveValue(String(product.price));
     expect(comboboxCategory).toHaveTextContent(category.name);
   });
+
+  it.only('Проверка установки фокуса на поле Name', async () => {
+    const { textboxName } = await renderComponent();
+
+    expect(textboxName).toHaveFocus();
+  });
 });
