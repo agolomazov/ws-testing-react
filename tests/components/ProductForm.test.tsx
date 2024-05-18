@@ -5,6 +5,7 @@ import { Category, Product } from '../../src/entities';
 import { AllProviders } from '../AllProviders';
 import { db } from '../mocks/db';
 import userEvent from '@testing-library/user-event';
+import { Toaster } from 'react-hot-toast';
 
 describe('<ProductForm />', () => {
   let category: Category;
@@ -22,7 +23,10 @@ describe('<ProductForm />', () => {
 
     render(
       <AllProviders>
-        <ProductForm product={product} onSubmit={vi.fn()} />
+        <>
+          <ProductForm product={product} onSubmit={onSubmit} />
+          <Toaster />
+        </>
       </AllProviders>
     );
 
@@ -165,4 +169,34 @@ describe('<ProductForm />', () => {
       expect(screen.getAllByRole('alert').length).toBeGreaterThan(0);
     }
   );
+
+  it('Отправка формы при корректных данных', async () => {
+    const { fillForm, onSubmit } = await renderComponent();
+    const formData = {
+      name: 'Bananas',
+      price: 12,
+      categoryId: category.id,
+    };
+
+    await fillForm(formData);
+
+    expect(onSubmit).toHaveBeenCalledWith(formData);
+  });
+
+  it('Отображаем toast в случае ошибки', async () => {
+    const { fillForm, onSubmit } = await renderComponent();
+    const formData = {
+      name: 'Bananas',
+      price: 12,
+      categoryId: category.id,
+    };
+
+    onSubmit.mockRejectedValue({});
+
+    await fillForm(formData);
+
+    const toast = screen.getByRole('status');
+    expect(toast).toBeInTheDocument();
+    expect(toast).toHaveTextContent(/unexpected error/i);
+  });
 });
