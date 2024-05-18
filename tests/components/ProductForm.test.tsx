@@ -199,4 +199,49 @@ describe('<ProductForm />', () => {
     expect(toast).toBeInTheDocument();
     expect(toast).toHaveTextContent(/unexpected error/i);
   });
+
+  it('Будет заблокирована кнопка отправки если данные были отправлены ранее', async () => {
+    const { fillForm, submitButton, onSubmit } = await renderComponent();
+    const formData = {
+      name: 'Bananas',
+      price: 12,
+      categoryId: category.id,
+    };
+
+    onSubmit.mockResolvedValue(new Promise(() => {}));
+
+    await fillForm(formData);
+
+    expect(submitButton).toBeDisabled();
+  });
+
+  it('Будет разблокирована кнопка отправки после успешного запроса', async () => {
+    const { fillForm, submitButton, onSubmit } = await renderComponent();
+    const formData = {
+      name: 'Bananas',
+      price: 12,
+      categoryId: category.id,
+    };
+
+    onSubmit.mockResolvedValue({});
+
+    await fillForm(formData);
+
+    expect(submitButton).not.toBeDisabled();
+  });
+
+  it('Будет разблокирована кнопка отправки после ошибки запроса', async () => {
+    const { fillForm, submitButton, onSubmit } = await renderComponent();
+    const formData = {
+      name: 'Bananas',
+      price: 12,
+      categoryId: category.id,
+    };
+
+    onSubmit.mockRejectedValue({});
+
+    await fillForm(formData);
+
+    expect(submitButton).not.toBeDisabled();
+  });
 });
