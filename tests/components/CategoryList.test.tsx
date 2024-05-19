@@ -3,10 +3,10 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
-import { Category } from '../../src/entities';
-import { db } from '../mocks/db';
-import ReduxProvider from '../../src/providers/ReduxProvider';
 import CategoryList from '../../src/components/CategoryList';
+import { Category } from '../../src/entities';
+import { AllProviders } from '../AllProviders';
+import { db } from '../mocks/db';
 import { simulateDelay, simulateError } from '../mocks/utils';
 
 describe('<CategoryList />', () => {
@@ -26,9 +26,9 @@ describe('<CategoryList />', () => {
 
   const renderComponent = () => {
     render(
-      <ReduxProvider>
+      <AllProviders>
         <CategoryList />
-      </ReduxProvider>
+      </AllProviders>
     );
   };
 
@@ -54,9 +54,8 @@ describe('<CategoryList />', () => {
     simulateError('/categories');
 
     renderComponent();
+    const errorMessage = await screen.findByText(/error/i);
 
-    await waitForElementToBeRemoved(() => screen.getByText(/loading/i));
-
-    expect(screen.getByText(/error/i)).toBeInTheDocument();
+    expect(errorMessage).toBeInTheDocument();
   });
 });
