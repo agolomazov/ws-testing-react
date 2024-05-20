@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import useProduct from "../hooks/useProduct";
+import { useParams } from 'react-router-dom';
+import useProduct from '../hooks/useProduct';
 
 const ProductDetailPage = () => {
   const params = useParams();
@@ -15,7 +15,9 @@ const ProductDetailPage = () => {
   return (
     <div>
       <h1>{product.name}</h1>
-      <p>{"$" + product.price}</p>
+      <p aria-label='price' role='price'>
+        {'$' + product.price}
+      </p>
     </div>
   );
 };
