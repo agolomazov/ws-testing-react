@@ -54,8 +54,7 @@ describe('<CategoryList />', () => {
     simulateError('/categories');
 
     renderComponent();
-    const errorMessage = await screen.findByText(/error/i);
 
-    expect(errorMessage).toBeInTheDocument();
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
   });
 });
