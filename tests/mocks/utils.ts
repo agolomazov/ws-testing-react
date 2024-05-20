@@ -1,5 +1,7 @@
 import { useAuth0, User } from '@auth0/auth0-react';
 import { delay, http, HttpResponse } from 'msw';
+import { createMemoryRouter } from 'react-router-dom';
+import routes from '../../src/routes';
 import { server } from './server';
 
 export const simulateDelay = (endpoint: string) => {
