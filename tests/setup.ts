@@ -6,6 +6,8 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+vi.mock('@auth0/auth0-react');
+
 // Fix error for toast async tests
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
